@@ -160,24 +160,21 @@ export
     ###
     
     # Type & aliases
-    AbstractMer,
-    Mer,
-    DNAMer,
-    RNAMer,
+    Kmer,
     DNAKmer,
+    DNAKmer27,
+    DNAKmer31,
+    DNAKmer63,
     RNAKmer,
-    
-    BigMer,
-    BigDNAMer,
-    BigRNAMer,
-    BigDNAKmer,
-    BigRNAKmer,
-    
+    RNAKmer27,
+    RNAKmer31,
+    RNAKmer63,
     DNACodon,
     RNACodon,
     
     # Iteration
-    neighbors,
+    fw_neighbors,
+    bw_neighbors,
     
     ###
     ### Sequence literals
@@ -283,8 +280,8 @@ include("longsequences/longsequence.jl")
 include("longsequences/hash.jl")
 include("longsequences/randseq.jl")
 
-# The definition of the Skipmer concrete type, and its method overloads...
-include("mers/mer.jl")
+# The definition of the Kmer concrete type, and its method overloads...
+include("mers/kmer.jl")
 
 # The definition of the ReferenceSequence concrete type, and its method overloads...
 include("nmask.jl")

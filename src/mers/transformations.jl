@@ -1,38 +1,94 @@
+
+
+@inline function setlast(kmer::Kmer{A,K,N}, nt::DNA) where {A,K,N}
+    x = kmer.data
+    @inbounds begin
+        bits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01])
+        tail = (x[N] & (typemax(UInt64) - UInt64(3))) | bits
+    end
+    body = ntuple(Val{N-1}()) do i
+        Base.@_inline_meta
+        return @inbounds x[i]
+    end
+    return Kmer{A,K,N}((body..., tail))
+end
+
+@inline function setfirst(kmer::Kmer{A,K,N}, nt::DNA) where {A,K,N}
+    x = kmer.data
+    n = (64N - 2K)
+    mask = typemax(UInt64) >> (n + 2)
+    @inbounds begin
+        ntbits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01]) << (62 - n)
+        newhead = (x[1] & mask) | ntbits
+    end
+    tail = ntuple(Val{N-1}()) do i
+        Base.@_inline_meta
+        return @inbounds x[i + 1]
+    end
+    return Kmer{A,K,N}((newhead, tail...))
+end
+
+# Bit-parallel element nucleotide complementation
+@inline function _complement_bitpar(a::A, head::UInt64, tail...) where {A<:NucleicAcidAlphabet{2}}
+    return (~head, _complement_bitpar(a, tail...)...)
+end
+
+@inline _complement_bitpar(a::A) where {A<:NucleicAcidAlphabet{2}} = ()
+
+
+@inline function pushfirst(x::Kmer{A,K,N}, nt::DNA) where {A,K,N}
+    ntbits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01]) << (62 - (64N - 2K))
+    return Kmer{A,K,N}(_rightshift_carry(2, ntbits, x.data...))
+end
+
+@inline function pushlast(x::Kmer{A,K,N}, nt::DNA) where {A,K,N}
+    ntbits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01])
+    _, newbits = _leftshift_carry(2, ntbits, x.data...)
+    return Kmer{A,K,N}(newbits)
+end
+
+
 ###
-### Mer specific specializations of src/biosequence/transformations.jl
+### Transformation methods
 ###
 
 """
-    complement(x::T) where {T <: Skipmer}
-
+    complement(seq::T) where {T<:Kmer}
 Return the complement of a short sequence type `x`.
 """
-function BioSymbols.complement(x::T) where {T<:AbstractMer}
-    return T(complement_bitpar(encoded_data(x), Alphabet(x)))
+@inline function BioSymbols.complement(seq::T) where {T<:Kmer}
+    return T(_complement_bitpar(Alphabet(seq), seq.data...))
 end
 
 """
-    reverse(x::T) where {T <: Skipmer}
-
-Return the reverse of short sequence type variable `x`.
+    reverse(seq::Kmer{A,K,N}) where {A,K,N}
+Return the reverse of short sequence type variable `seq`.
 """
-function Base.reverse(x::T) where {T<:AbstractMer}
-    bits = encoded_data(x)
-    rbits = reversebits(bits, BitsPerSymbol{2}())
-    return T(rbits >> (sizeof(bits) * 8 - 2 * length(x)))
+@inline function Base.reverse(seq::Kmer{A,K,N}) where {A,K,N}
+#    rdata = _reverse(identity, BitsPerSymbol(seq), seq.data...)
+    rdata = _reverse(BitsPerSymbol(seq), seq.data...)
+    return Kmer{A,K,N}(rightshift_carry(rdata, 64N - 2K))
 end
 
-
 """
-    reverse_complement(x::Skipmer)
+    reverse_complement(x::Kmer)
 
 Return the reverse complement of `x`.
 """
-reverse_complement(x::AbstractMer) = complement(reverse(x))
+@inline function reverse_complement(x::Kmer{A,K,N}) where {A,K,N}
+    return complement(reverse(x))
+end
 
+#=
+@inline function reverse_complement2(seq::Kmer{A,K,N}) where {A,K,N}
+    f = x -> complement_bitpar(x, A())
+    rdata = _reverse(f, BitsPerSymbol(seq), seq.data...)
+    return Kmer{A,K,N}(rightshift_carry(rdata, 64N - 2K))
+end
+=#
 
 """
-    canonical(kmer::Skipmer)
+    canonical(x::Kmer)
 
 Return the canonical sequence of `x`.
 
@@ -40,9 +96,15 @@ A canonical sequence is the numerical lesser of a k-mer and its reverse compleme
 This is useful in hashing/counting sequences in data that is not strand specific,
 and thus observing the short sequence is equivalent to observing its reverse complement.
 """
-@inline canonical(x::AbstractMer) = min(x, reverse_complement(x))
+@inline canonical(x::Kmer) = min(x, reverse_complement(x))
 
+###
+### Old Mer specific specializations of src/biosequence/transformations.jl
+### - not currently transferred to new type.
 
+# TODO: Sort this and decide on transferring to new NTuple based kmers or no.
+
+#=
 function swap(x::T, i, j) where {T<:AbstractMer}
     i = 2 * length(x) - 2i
     j = 2 * length(x) - 2j
@@ -61,3 +123,4 @@ function Random.shuffle(x::T) where {T<:AbstractMer}
     end
     return x
 end
+=#

@@ -187,7 +187,6 @@ include("composition.jl")
     include("mers/conversion.jl")
     include("mers/comparisons.jl")
     include("mers/length.jl")
-    include("mers/arithmetic.jl")
     include("mers/access.jl")
     include("mers/random.jl")
     include("mers/find.jl")
@@ -195,7 +194,7 @@ include("composition.jl")
     include("mers/transformations.jl")
     include("mers/mismatches.jl")
     include("mers/debruijn_neighbors.jl")
-    include("mers/shuffle.jl")
+    #include("mers/shuffle.jl")
 end
 
 @testset "Iterators" begin

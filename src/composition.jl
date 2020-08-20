@@ -34,7 +34,7 @@ function Composition(seq::ReferenceSequence)
     return Composition{DNA}(count_array2dict(counts, ACGTN))
 end
 
-function Composition(kmer::AbstractMer{DNAAlphabet{2}})
+function Composition(kmer::Kmer{DNAAlphabet{2}})
     counts = Dict{DNA,Int}()
     counts[DNA_A] = count_a(kmer)
     counts[DNA_C] = count_c(kmer)
@@ -43,7 +43,7 @@ function Composition(kmer::AbstractMer{DNAAlphabet{2}})
     return Composition(counts)
 end
 
-function Composition(kmer::AbstractMer{RNAAlphabet{2}})
+function Composition(kmer::Kmer{RNAAlphabet{2}})
     counts = Dict{RNA,Int}()
     counts[RNA_A] = count_a(kmer)
     counts[RNA_C] = count_c(kmer)
@@ -61,18 +61,18 @@ function Composition(seq::LongAminoAcidSeq)
     return Composition{AminoAcid}(count_array2dict(counts, symbols(AminoAcidAlphabet())))
 end
 
-function Composition(iter::AbstractMerIterator{T}) where {T<:AbstractMer}
-    counts = Dict{T,Int}()
-    if ksize(T) ≤ 8
+function Composition(iter::AbstractMerIterator{Kmer{A,K,N}}) where {A,K,N}
+    counts = Dict{Kmer{A,K,N},Int}()
+    if K ≤ 8
         # This is faster for short k-mers.
-        counts′ = zeros(Int, 4 ^ ksize(T))
+        counts′ = zeros(Int, 4 ^ K)
         for mer in iter
-            @inbounds counts′[encoded_data(mer.fw) + 1] += 1
+            @inbounds counts′[first(mer.fw.data) + 1] += 1
         end
         for x in eachindex(counts′)
             @inbounds c = counts′[x]
             if c > 0
-                counts[T(x - 1)] = c
+                counts[Kmer{A,K,N}((unsigned(x - 1),))] = c
             end
         end
     else
@@ -80,7 +80,7 @@ function Composition(iter::AbstractMerIterator{T}) where {T<:AbstractMer}
             counts[x] = get(counts, mer.fw, 0) + 1
         end
     end
-    return Composition{T}(counts)
+    return Composition{Kmer{A,K,N}}(counts)
 end
 
 """

@@ -19,11 +19,11 @@ end
 ###
 
 function Base.getindex(code::GeneticCode, idx::Union{DNACodon,RNACodon})
-    return code.tbl[convert(UInt64, idx) + 1]
+    return code.tbl[@inbounds idx.data[1] + 1]
 end
 
 function Base.setindex!(code::GeneticCode, aa::AminoAcid, idx::Union{DNACodon,RNACodon})
-    return setindex!(code.tbl, aa, convert(UInt64, idx) + 1)
+    return setindex!(code.tbl, aa, @inbounds idx.data[1] + 1)
 end
 
 Base.copy(code::GeneticCode) = GeneticCode(copy(code.name), copy(code.tbl))
@@ -57,7 +57,7 @@ function Base.iterate(code::GeneticCode, x=UInt64(0))
     if x > UInt64(0b111111)
         return nothing
     else
-        c = RNACodon(x)
+        c = RNAKmer{3,1}((x,))
         return (c, code[c]), x + 1
     end
 end
@@ -118,7 +118,7 @@ function parse_gencode(s)
         b1 = DNA(base1[i])
         b2 = DNA(base2[i])
         b3 = DNA(base3[i])
-        codon = DNACodon(b1, b2, b3)
+        codon = Kmer(b1, b2, b3)
         codes[codon] = aa
     end
     return codes
@@ -354,7 +354,7 @@ function translate(seq::Union{LongRNASeq, LongSequence{RNAAlphabet{2}}}, code::G
                 aaseq[j] = aa
             end
         else
-            aaseq[j] = code[RNACodon(x, y, z)]
+            aaseq[j] = code[Kmer(x, y, z)]
         end
         i += 3
         j += 1
@@ -379,10 +379,10 @@ function try_translate_ambiguous_codon(code::GeneticCode,
                                        z::RNA)
     if !isambiguous(x) && !isambiguous(y)
         # try to translate a codon `(x, y, RNA_N)`
-        aa_a = code[RNACodon(x, y, RNA_A)]
-        aa_c = code[RNACodon(x, y, RNA_C)]
-        aa_g = code[RNACodon(x, y, RNA_G)]
-        aa_u = code[RNACodon(x, y, RNA_U)]
+        aa_a = code[Kmer(x, y, RNA_A)]
+        aa_c = code[Kmer(x, y, RNA_C)]
+        aa_g = code[Kmer(x, y, RNA_G)]
+        aa_u = code[Kmer(x, y, RNA_U)]
         if aa_a == aa_c == aa_g == aa_u
             return aa_a
         end

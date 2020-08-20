@@ -1,25 +1,16 @@
 @testset "Print" begin
     buf = IOBuffer()
 
-    print(buf, DNAMer("ACGT"))
+    print(buf, DNAKmer("ACGT"))
     @test String(take!(buf)) == "ACGT"
 
-    print(buf, RNAMer("ACGU"))
-    @test String(take!(buf)) == "ACGU"
-    
-    print(buf, BigDNAMer("ACGT"))
-    @test String(take!(buf)) == "ACGT"
-
-    print(buf, BigRNAMer("ACGU"))
+    print(buf, RNAKmer("ACGU"))
     @test String(take!(buf)) == "ACGU"
 end
 
 @testset "Show" begin
     buf = IOBuffer()
 
-    show(buf, DNAMer("AGAGT"))
-    @test String(take!(buf)) == "AGAGT"
-    
-    show(buf, BigDNAMer("AGAGT"))
+    show(buf, DNAKmer("AGAGT"))
     @test String(take!(buf)) == "AGAGT"
 end

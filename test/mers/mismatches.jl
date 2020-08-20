@@ -11,15 +11,13 @@
         a = random_dna_kmer(len)
         b = random_dna_kmer(len)
         if len <= 32
-            test_mismatches(DNAMer(a), DNAMer(b))
+            test_mismatches(DNAKmer(a), DNAKmer(b))
         end
-        test_mismatches(BigDNAMer(a), BigDNAMer(b))
         
         a = random_rna_kmer(len)
         b = random_rna_kmer(len)
         if len <= 32
-            test_mismatches(RNAMer(a), RNAMer(b))
+            test_mismatches(RNAKmer(a), RNAKmer(b))
         end
-        test_mismatches(BigRNAMer(a), BigRNAMer(b))
     end
 end

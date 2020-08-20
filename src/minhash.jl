@@ -37,10 +37,18 @@ function Base.:(==)(a::MinHashSketch, b::MinHashSketch)
     return a.kmersize == b.kmersize && a.sketch == b.sketch
 end
 
+# This method just does some dispatch convenience so a user can be lazy and say DNAKmer{27},
+# and have this method work out the N in Kmer{A,K,N}. KT should be determined at compile time.
+function kmerminhash!(::Type{DNAKmer{K}}, seq::LongSequence, s::Integer, kmerhashes::Vector{UInt64}) where {K}
+    KT = kmertype(DNAKmer{K})
+    return kmerminhash!(KT, seq, s, kmerhashes)
+end
 
-function kmerminhash!(::Type{DNAMer{k}}, seq::LongSequence, s::Integer, kmerhashes::Vector{UInt64}) where {k}
+function kmerminhash!(::Type{DNAKmer{K,N}}, seq::LongSequence, s::Integer, kmerhashes::Vector{UInt64}) where {K,N}
+    checkmer(DNAKmer{K,N})
+    
     # generate first `s` kmers
-    iter = each(DNAMer{k}, seq)
+    iter = each(DNAKmer{K,N}, seq)
     iter_value = iterate(iter)
     while length(kmerhashes) < s && iter_value !== nothing
         res, state = iter_value
@@ -73,13 +81,20 @@ function kmerminhash!(::Type{DNAMer{k}}, seq::LongSequence, s::Integer, kmerhash
     return kmerhashes
 end
 
+# TODO: Implement versions of these methods that accept Val{k} instead of k::Integer for cases where it matters to
+# preserve type stability?
+
 """
     minhash(seq, k::Integer, s::Integer)
 
 Generate a MinHash sketch of size `s` for kmers of length `k`.
+
+!!! warning
+    This method accepts `k` as a runtime value, and so is probably going to
+    introduce type instability in your code.
 """
 function minhash(seq::LongSequence, k::Integer, s::Integer)
-    kmerhashes = kmerminhash!(DNAMer{k}, seq, s, sizehint!(UInt64[], s))
+    kmerhashes = kmerminhash!(DNAKmer{k}, seq, s, sizehint!(UInt64[], s))
     length(kmerhashes) < s && error("failed to generate enough hashes")
 
     return MinHashSketch(kmerhashes, k)
