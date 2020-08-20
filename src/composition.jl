@@ -77,7 +77,7 @@ function Composition(iter::AbstractMerIterator{Kmer{A,K,N}}) where {A,K,N}
         end
     else
         for mer in iter
-            counts[x] = get(counts, mer.fw, 0) + 1
+            counts[mer.fw] = get(counts, mer.fw, 0) + 1
         end
     end
     return Composition{Kmer{A,K,N}}(counts)
