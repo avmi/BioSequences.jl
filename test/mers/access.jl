@@ -63,16 +63,4 @@
         rna_vec = [RNA_A, RNA_C, RNA_U, RNA_G]
         @test all([nt === rna_vec[i] for (i, nt) in enumerate(rna_kmer)])
     end
-
-    @testset "Take slices of Kmers" begin
-	@test DNAKmer("ACGT")[2:3] == DNAKmer("CG")
-	@test RNAKmer("ACGU")[2:3] == RNAKmer("CG")
-
-	@test DNAKmer("ACGT")[2:1:3] == DNAKmer("CG")
-	@test DNAKmer("ACGT")[1:2:end] == DNAKmer("AG")
-	@test DNAKmer("ACGT")[3:-1:2] == DNAKmer("GC")
-
-	@test_throws ArgumentError DNAKmer("ACGT")[3:2]
-	@test_throws BoundsError DNAKmer("ACGT")[3:5]
-    end
 end

@@ -248,15 +248,6 @@ end
     return reinterpret(eltype(x), 0x01 << bits)
 end
 
-# TODO: Investigate a more efficient way of doing this. It is not type stable,
-# and also it calls the kmer constructor to construct a kmer from a nucleotide
-# generator. Constructor probably allocates and we can probably do something with
-# ntuple bit-flipping instead.
-function Base.getindex(mer::Kmer{A,K,N}, r::OrdinalRange{<:Integer, <:Integer}) where {A,K,N}
-    new_T = kmertype(Kmer{A,length(r)})
-    return new_T([mer[i] for i in r])
-end
-
 #LongSequence{A}(x::Kmer{A,K,N}) where {A,K,N} = LongSequence{A}([nt for nt in x])
 # Convenience method so as don't need to specify A in LongSequence{A}.
 LongSequence(x::Kmer{A,K,N}) where {A,K,N} = LongSequence{A}(x)
