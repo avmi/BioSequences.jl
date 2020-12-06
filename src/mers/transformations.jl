@@ -37,12 +37,12 @@ end
 
 
 @inline function pushfirst(x::Kmer{A,K,N}, nt::DNA) where {A,K,N}
-    ntbits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01]) << (62 - (64N - 2K))
+    ntbits = UInt64(@inbounds twobitnucs[reinterpret(UInt8, nt) + 0x01]) << (62 - (64N - 2K))
     return Kmer{A,K,N}(_rightshift_carry(2, ntbits, x.data...))
 end
 
 @inline function pushlast(x::Kmer{A,K,N}, nt::DNA) where {A,K,N}
-    ntbits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01])
+    ntbits = UInt64(@inbounds twobitnucs[reinterpret(UInt8, nt) + 0x01])
     _, newbits = _leftshift_carry(2, ntbits, x.data...)
     return Kmer{A,K,N}(newbits)
 end
