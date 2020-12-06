@@ -48,7 +48,7 @@ function kmerminhash!(::Type{DNAKmer{K,N}}, seq::LongSequence, s::Integer, kmerh
     checkmer(DNAKmer{K,N})
     
     # generate first `s` kmers
-    iter = each(DNAKmer{K,N}, seq)
+    iter = each(DNAKmer{K}, seq)
     iter_value = iterate(iter)
     while length(kmerhashes) < s && iter_value !== nothing
         res, state = iter_value
