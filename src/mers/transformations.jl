@@ -1,40 +1,10 @@
 
-
-@inline function setlast(kmer::Kmer{A,K,N}, nt::DNA) where {A,K,N}
-    x = kmer.data
-    @inbounds begin
-        bits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01])
-        tail = (x[N] & (typemax(UInt64) - UInt64(3))) | bits
-    end
-    body = ntuple(Val{N-1}()) do i
-        Base.@_inline_meta
-        return @inbounds x[i]
-    end
-    return Kmer{A,K,N}((body..., tail))
-end
-
-@inline function setfirst(kmer::Kmer{A,K,N}, nt::DNA) where {A,K,N}
-    x = kmer.data
-    n = (64N - 2K)
-    mask = typemax(UInt64) >> (n + 2)
-    @inbounds begin
-        ntbits = UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01]) << (62 - n)
-        newhead = (x[1] & mask) | ntbits
-    end
-    tail = ntuple(Val{N-1}()) do i
-        Base.@_inline_meta
-        return @inbounds x[i + 1]
-    end
-    return Kmer{A,K,N}((newhead, tail...))
-end
-
 # Bit-parallel element nucleotide complementation
 @inline function _complement_bitpar(a::A, head::UInt64, tail...) where {A<:NucleicAcidAlphabet{2}}
     return (~head, _complement_bitpar(a, tail...)...)
 end
 
 @inline _complement_bitpar(a::A) where {A<:NucleicAcidAlphabet{2}} = ()
-
 
 @inline function pushfirst(x::Kmer{A,K,N}, nt::DNA) where {A,K,N}
     ntbits = UInt64(@inbounds twobitnucs[reinterpret(UInt8, nt) + 0x01]) << (62 - (64N - 2K))
