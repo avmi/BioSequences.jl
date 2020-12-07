@@ -142,7 +142,7 @@ Kmer{DNAAlphabet{2},63,2}
 ```
 """
 @inline function kmertype(::Type{Kmer{A,K}}) where {A,K}
-    return Kmer{A,K,ifelse(rem(2K, 64) != 0, div(2K, 64) + 1, div(2K, 64))}
+    return Kmer{A,K,seq_data_len(A, K)}
 end
 @inline kmertype(::Type{Kmer{A,K,N}}) where {A,K,N} = Kmer{A,K,N}
 
