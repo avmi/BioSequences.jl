@@ -1,5 +1,3 @@
-@inline blank_ntuple(::Type{Kmer{A,K,N}}) where {A,K,N} = ntuple(x -> zero(UInt64), Val{N}())
-
 """
     _cliphead(by::Integer, head::UInt64, tail...)
 

@@ -40,6 +40,10 @@ struct Kmer{A<:NucleicAcidAlphabet{2},K,N} <: BioSequence{A}
     end
 end
 
+# Create a blank ntuple of appropriate length for a given Kmer with N.
+@inline blank_ntuple(::Type{Kmer{A,K,N}}) where {A,K,N} = ntuple(x -> zero(UInt64), Val{N}())
+
+
 ###
 ### Constructors
 ###

@@ -131,8 +131,6 @@ const kmerbits = (0xff, 0x00, 0x01, 0xff,
                   0x03, 0xff, 0xff, 0xff,
                   0xff, 0xff, 0xff, 0xff)
 
-@inline blank_ntuple(::Type{Kmer{A,K,N}}) where {A,K,N} = ntuple(x -> zero(UInt64), Val{N}())
-
 # Initializers for two-bit nucleic acid alphabets...
 @inline function Base.iterate(it::AbstractMerIterator{Kmer{A,K,N},S}) where {A,K,N,S<:LongSequence{<:NucleicAcidAlphabet{2}}}
     filled, i = 0, it.start
