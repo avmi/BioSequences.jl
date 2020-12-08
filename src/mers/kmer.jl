@@ -241,16 +241,50 @@ end
 
 @inline function inbounds_getindex(x::Kmer{A,K,N}, i::Integer) where {A,K,N}
     # Emulation of BitIndex type
-    i′ = i + div(64N - 2K, 2)
+    i′ = i + div(64N - 2K, 2) # Slightly different to stock `bitindex(seq, i)` due to unused MSBs in Kmers.
     val = (i′ - 1) << 1
-    idx = (val >> 6) + 1
-    off = 62 - (val & (UInt8(64) - 0x01))
+    idx = (val >> 6) + 1 # Equivalent instruction by instruction to `index(i::BitIndex) = (i.val >> index_shift(i)) + 1`
+    off = 62 - (val & (UInt8(64) - 0x01)) # Save for the 62 term - equivalent instruction by instruction to `offset(i::BitIndex) = i.val & offset_mask(i)`
     @inbounds begin
         chunk = x.data[idx]
     end
     bits = (chunk >> off) & UInt64(3)
     return reinterpret(eltype(x), 0x01 << bits)
 end
+
+include("indexing.jl")
+
+# Emulation of BitIndex type
+#i′ = i + div(64N - 2K, 2)
+#val = (i′ - 1) << 1
+#idx = (val >> 6) + 1
+#off = 62 - (val & (UInt8(64) - 0x01))
+
+#@inline function bitindex(::BitsPerSymbol{N}, ::Type{W}, i) where {N,W}
+#    return BitIndex{N, W}((i - 1) << trailing_zeros(N))
+#end
+
+#offset_mask(i::BitIndex{N,W}) where {N,W} = UInt8(bitwidth(W)) - 0x01
+#offset(i::BitIndex) = i.val & offset_mask(i)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #LongSequence{A}(x::Kmer{A,K,N}) where {A,K,N} = LongSequence{A}([nt for nt in x])
 # Convenience method so as don't need to specify A in LongSequence{A}.

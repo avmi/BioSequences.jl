@@ -22,11 +22,11 @@ bits_per_symbol(::BitIndex{N, W}) where {N,W} = N
     return BitIndex{N, W}((i - 1) << trailing_zeros(N))
 end
 
-index_shift(i::BitIndex{N, UInt64}) where N = 6
-index_shift(i::BitIndex{N, UInt32}) where N = 5
-index_shift(i::BitIndex{N, UInt16}) where N = 4
-index_shift(i::BitIndex{N, UInt8}) where N = 3
-offset_mask(i::BitIndex{N, W}) where {N, W} = UInt8(8 * sizeof(W)) - 0x01
+@inline bitwidth(::Type{W}) where {W<:Unsigned} = 8 * sizeof(W)
+@inline bitiwdth(::BitIndex{N,W}) where {N,W} = bitwidth(W)
+
+@inline index_shift(i::BitIndex{N,W}) where {N,W} = trailing_zeros(bitwidth(W))
+@inline offset_mask(i::BitIndex{N,W}) where {N,W} = UInt8(bitwidth(W)) - 0x01
 
 index(i::BitIndex) = (i.val >> index_shift(i)) + 1
 offset(i::BitIndex) = i.val & offset_mask(i)
