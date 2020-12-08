@@ -192,7 +192,8 @@ const RNACodon = RNAKmer{3,1}
     if K < 1
         throw(ArgumentError("Bad kmer parameterisation. K must be greater than 0."))
     end
-    n = ifelse(rem(2K, 64) != 0, div(2K, 64) + 1, div(2K, 64))
+    d, r = divrem(2K, 64)
+    n = ifelse(r != 0, d + 1, d)
     if n !== N
         # This has been significantly changed conceptually from before. Now we
         # don't just check K, but *enforce* the most appropriate N for K.
