@@ -192,8 +192,7 @@ const RNACodon = RNAKmer{3,1}
     if K < 1
         throw(ArgumentError("Bad kmer parameterisation. K must be greater than 0."))
     end
-    d, r = divrem(2K, 64)
-    n = ifelse(r != 0, d + 1, d)
+    n = seq_data_len(A, K)
     if n !== N
         # This has been significantly changed conceptually from before. Now we
         # don't just check K, but *enforce* the most appropriate N for K.

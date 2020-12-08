@@ -23,7 +23,7 @@ bits_per_symbol(::BitIndex{N, W}) where {N,W} = N
 end
 
 @inline bitwidth(::Type{W}) where {W<:Unsigned} = 8 * sizeof(W)
-@inline bitiwdth(::BitIndex{N,W}) where {N,W} = bitwidth(W)
+@inline bitwidth(::BitIndex{N,W}) where {N,W} = bitwidth(W)
 
 @inline index_shift(i::BitIndex{N,W}) where {N,W} = trailing_zeros(bitwidth(W))
 @inline offset_mask(i::BitIndex{N,W}) where {N,W} = UInt8(bitwidth(W)) - 0x01
