@@ -183,7 +183,7 @@ const RNACodon = RNAKmer{3,1}
 ###
 
 @inline ksize(::Type{Kmer{A,K,N}}) where {A,K,N} = K
-@inline capacity(::Type{Kmer{A,K,N}}) where {A,K,N} = div(64N, 2)
+@inline capacity(::Type{Kmer{A,K,N}}) where {A,K,N} = div(64N, bits_per_symbol(A()))
 @inline capacity(seq::Kmer) = capacity(typeof(seq))
 @inline n_unused(::Type{Kmer{A,K,N}}) where {A,K,N} = capacity(Kmer{A,K,N}) - K
 @inline n_unused(seq::Kmer) = n_unused(typeof(seq))
