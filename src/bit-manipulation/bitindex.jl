@@ -28,8 +28,8 @@ end
 @inline index_shift(i::BitIndex{N,W}) where {N,W} = trailing_zeros(bitwidth(W))
 @inline offset_mask(i::BitIndex{N,W}) where {N,W} = UInt8(bitwidth(W)) - 0x01
 
-index(i::BitIndex) = (i.val >> index_shift(i)) + 1
-offset(i::BitIndex) = i.val & offset_mask(i)
+@inline index(i::BitIndex) = (i.val >> index_shift(i)) + 1
+@inline offset(i::BitIndex) = i.val & offset_mask(i)
 
 Base.:+(i::BitIndex{N,W}, n::Integer) where {N,W} = BitIndex{N,W}(i.val + n)
 Base.:-(i::BitIndex{N,W}, n::Integer) where {N,W} = BitIndex{N,W}(i.val - n)
@@ -62,6 +62,13 @@ Base.show(io::IO, i::BitIndex) = print(io, '(', index(i), ", ", offset(i), ')')
 @inline function extract_encoded_element(bidx::BitIndex{N,W}, data::AbstractArray{W}) where {N,W}
     @inbounds chunk = data[index(bidx)]
     offchunk = chunk >> offset(bidx)
+    return offchunk & bitmask(bidx)
+end
+
+"Extract the element stored in a packed bitarray referred to by bidx."
+@inline function extract_encoded_element(bidx::BitIndex{N,W}, data::NTuple{n,W}) where {N,n,W}
+    @inbounds chunk = data[index(bidx)]
+    offchunk = chunk >> (bitwidth(bidx) - N - offset(bidx))
     return offchunk & bitmask(bidx)
 end
 
