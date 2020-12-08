@@ -188,6 +188,19 @@ const RNACodon = RNAKmer{3,1}
 @inline n_unused(::Type{Kmer{A,K,N}}) where {A,K,N} = capacity(Kmer{A,K,N}) - K
 @inline n_unused(seq::Kmer) = n_unused(typeof(seq))
 
+"""
+    checkmer(::Type{Kmer{A,K,N}}) where {A,K,N}
+
+Internal method - enforces good kmer type parameterisation.
+
+For a given Kmer{A,K,N} of length K, the number of words used to
+represent it (N) should be the minimum needed to contain all K symbols,
+no larger (wasteful) no smaller (just... wrong).
+
+Because it is used on type parameters / variables, these conditions should be
+checked at compile time, and the branches / error throws eliminated when the
+parameterisation of the Kmer type is good. 
+"""
 @inline function checkmer(::Type{Kmer{A,K,N}}) where {A,K,N}
     if K < 1
         throw(ArgumentError("Bad kmer parameterisation. K must be greater than 0."))
