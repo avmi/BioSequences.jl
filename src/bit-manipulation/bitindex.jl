@@ -11,7 +11,7 @@
 #                          |<-offset(i)-|
 #                      |<--- 64 bits -->|
 
-struct BitIndex{N, W}
+struct BitIndex{N,W}
     val::Int64
 end
 

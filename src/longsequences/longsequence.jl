@@ -62,6 +62,8 @@ Base.length(seq::LongSequence) = seq.len
 bindata(seq::LongSequence) = seq.data
 Base.eltype(::Type{LongSequence{A}}) where {A} = eltype(A)
 
+# TODO: Deal with this - it's 64 bit specific, unlike a lot of other stuff in
+# bitindex.jl
 @inline function seq_data_len(::Type{A}, len::Integer) where A <: Alphabet
     return cld(len, div(64, bits_per_symbol(A())))
 end

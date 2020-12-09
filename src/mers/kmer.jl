@@ -7,7 +7,7 @@
 include("tuple_bitflipping.jl")
 
 """
-    Kmer{A<:NucleicAcidAlphabet{2},K,N} <: BioSequence{A}
+    Kmer{A<:Alphabet,K,N} <: BioSequence{A}
 
 A parametric, immutable, bitstype for representing Kmers - short sequences.
 Given the number of Kmers generated from raw sequencing reads, avoiding
@@ -28,15 +28,15 @@ of the type are still defined.
     available, since they can return a new kmer value as a result e.g.
     `reverse_complement`. 
 """
-struct Kmer{A<:NucleicAcidAlphabet{2},K,N} <: BioSequence{A}
+struct Kmer{A<:Alphabet,K,N} <: BioSequence{A}
     data::NTuple{N,UInt64}
     
-    function Kmer{A,K,N}(data::NTuple{N,UInt64}) where {A<:NucleicAcidAlphabet{2},K,N}
+    function Kmer{A,K,N}(data::NTuple{N,UInt64}) where {A<:Alphabet,K,N}
         checkmer(Kmer{A,K,N})
         # TODO: Decide on whether this method should always mask the (64N - 2K)
         # MSBs of the input tuple, as we do that in quite a few cases before
         # calling this constructor: see the typemin, typemax, rand, and transformations.jl
-        return new(_cliphead(64N - 2K, data...))
+        return new(_cliphead(n_unused(Kmer{A,K,N}) * bits_per_elem(A()), data...))
     end
 end
 
@@ -71,16 +71,14 @@ Kmer{A}(nucs) where {A,K} = Kmer{A,length(nucs)}(nucs)
 @inline function _build_kmer_data(nucs, ::Type{Kmer{A,K,N}}) where {A,K,N}
     checkmer(Kmer{A,K,N})
     # Construct the head.
-    bases_in_head = div(64 - (64N - 2K), 2)
+    bases_in_head = div(64 - (64N - (bits_per_symbol(A()) * K)), bits_per_symbol(A()))
     head = zero(UInt64)
     @inbounds for i in 1:bases_in_head
         nt = convert(eltype(Kmer{A,K,N}), nucs[i])
-        if isambiguous(nt)
-            throw(ArgumentError("cannot create a mer with ambiguous nucleotides"))
-        elseif isgap(nt)
+        if isgap(nt)
             throw(ArgumentError("cannot create a mer with gaps"))
         end
-        head = (head << 2) | UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01])
+        head = (head << bits_per_symbol(A())) | UInt64(encode(A(), nt))
     end
     # And the rest of the sequence
     idx = Ref(bases_in_head + 1)
@@ -90,12 +88,10 @@ Kmer{A}(nucs) where {A,K} = Kmer{A,length(nucs)}(nucs)
         body = zero(UInt64)
         @inbounds for i in 1:32
             nt = convert(eltype(Kmer{A,K,N}), nucs[idx[]])
-            if isambiguous(nt)
-                throw(ArgumentError("cannot create a mer with ambiguous nucleotides"))
-            elseif isgap(nt)
+            if isgap(nt)
                 throw(ArgumentError("cannot create a mer with gaps"))
             end
-            body = (body << 2) | UInt64(twobitnucs[reinterpret(UInt8, nt) + 0x01])
+            body = (body << bits_per_symbol(A())) | UInt64(encode(A(), nt))
             idx[] += 1
         end
         return body
@@ -253,38 +249,6 @@ end
 #Alphabet(::Type{Mer{A,K} where A<:NucleicAcidAlphabet{2}}) where {K} = Any
 
 include("indexing.jl")
-
-# Emulation of BitIndex type
-#i′ = i + div(64N - 2K, 2)
-#val = (i′ - 1) << 1
-#idx = (val >> 6) + 1
-#off = 62 - (val & (UInt8(64) - 0x01))
-
-#@inline function bitindex(::BitsPerSymbol{N}, ::Type{W}, i) where {N,W}
-#    return BitIndex{N, W}((i - 1) << trailing_zeros(N))
-#end
-
-#offset_mask(i::BitIndex{N,W}) where {N,W} = UInt8(bitwidth(W)) - 0x01
-#offset(i::BitIndex) = i.val & offset_mask(i)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #LongSequence{A}(x::Kmer{A,K,N}) where {A,K,N} = LongSequence{A}([nt for nt in x])
 # Convenience method so as don't need to specify A in LongSequence{A}.
