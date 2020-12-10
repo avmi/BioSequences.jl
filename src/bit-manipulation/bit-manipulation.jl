@@ -27,14 +27,14 @@ end
     )
 end
 
-@inline function gc_bitcount(x::Unsigned, ::BitsPerSymbol{2})
+@inline function gc_bitcount(x::Unsigned, ::NucleicAcidAlphabet{2})
     msk = repeatpattern(typeof(x), 0x55)
     c = x & msk
     g = (x >> 1) & msk
     return count_ones(c ⊻ g)
 end
 
-@inline function gc_bitcount(x::Unsigned, ::BitsPerSymbol{4})
+@inline function gc_bitcount(x::Unsigned, ::NucleicAcidAlphabet{4})
     a =  x & repeatpattern(typeof(x), 0x11)
     c = (x & repeatpattern(typeof(x), 0x22)) >> 1
     g = (x & repeatpattern(typeof(x), 0x44)) >> 2
