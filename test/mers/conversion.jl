@@ -80,10 +80,10 @@ global reps = 10
     @test_throws ArgumentError DNAKmer(dna"") # 0-mers not allowed
     @test_throws ArgumentError DNAKmer{0}(UInt64(0)) # 0-mers not allowed
     @test_throws ArgumentError RNAKmer{0}(UInt64(0)) # 0-mers not allowed
-    @test_throws ArgumentError Kmer(RNA_A, RNA_C, RNA_G, RNA_N, RNA_U) # no Ns in kmers
-    @test_throws ArgumentError Kmer(DNA_A, DNA_C, DNA_G, DNA_N, DNA_T) # no Ns in kmers
-    @test_throws ArgumentError RNAKmer(rna"ACGNU")# no Ns in kmers
-    @test_throws ArgumentError DNAKmer(dna"ACGNT") # no Ns in kmers
+    @test_throws BioSequences.EncodeError Kmer(RNA_A, RNA_C, RNA_G, RNA_N, RNA_U) # no Ns in kmers
+    @test_throws BioSequences.EncodeError Kmer(DNA_A, DNA_C, DNA_G, DNA_N, DNA_T) # no Ns in kmers
+    @test_throws BioSequences.EncodeError RNAKmer(rna"ACGNU")# no Ns in kmers
+    @test_throws BioSequences.EncodeError DNAKmer(dna"ACGNT") # no Ns in kmers
     @test_throws MethodError Kmer(RNA_A, DNA_A) # no mixing of RNA and DNA
 
     @testset "From strings" begin
