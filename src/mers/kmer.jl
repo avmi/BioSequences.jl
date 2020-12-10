@@ -214,18 +214,15 @@ end
 @inline Base.summary(x::Kmer{RNAAlphabet{2},K,N}) where {K,N} = string("RNA ", K, "-mer")
 
 function Base.typemin(::Type{Kmer{A,K,N}}) where {A,K,N}
-    #checkmer(Kmer{A,K,N}) Got moved to constructor.
     return Kmer{A,K,N}(ntuple(i -> zero(UInt64), N))
 end
 
 function Base.typemax(::Type{Kmer{A,K,N}}) where {A,K,N}
-    #checkmer(Kmer{A,K,N}) Got moved to constructor.
-    return Kmer{A,K,N}((typemax(UInt64) >> (64N - 2K), ntuple(i -> typemax(UInt64), N - 1)...))
+    return Kmer{A,K,N}((typemax(UInt64), ntuple(i -> typemax(UInt64), N - 1)...))
 end
 
 function Base.rand(::Type{Kmer{A,K,N}}) where {A,K,N}
-    #checkmer(Kmer{A,K,N}) Got moved to constructor.
-    return Kmer{A,K,N}((rand(UInt64) >> (64N - 2K), ntuple(i -> rand(UInt64), N - 1)...))
+    return Kmer{A,K,N}((rand(UInt64), ntuple(i -> rand(UInt64), N - 1)...))
 end
 
 Base.rand(::Type{Kmer{A,K}}) where {A,K} = rand(kmertype(Kmer{A,K}))
