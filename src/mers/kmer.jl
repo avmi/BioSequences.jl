@@ -36,7 +36,7 @@ struct Kmer{A<:Alphabet,K,N} <: BioSequence{A}
         # TODO: Decide on whether this method should always mask the (64N - 2K)
         # MSBs of the input tuple, as we do that in quite a few cases before
         # calling this constructor: see the typemin, typemax, rand, and transformations.jl
-        return new(_cliphead(n_unused(Kmer{A,K,N}) * bits_per_elem(A()), data...))
+        return new(_cliphead(n_unused(Kmer{A,K,N}) * bits_per_symbol(A()), data...))
     end
 end
 
