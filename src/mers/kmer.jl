@@ -171,6 +171,9 @@ const RNAKmer31 = RNAKmer{31,1}
 "Shortcut for the type `RNAKmer{63,2}`"
 const RNAKmer63 = RNAKmer{63,2}
 
+"Shortcut for the type `Kmer{AminoAcidAlphabet,K,N}`"
+const AAKmer{K,N} = Kmer{AminoAcidAlphabet,K,N}
+
 const DNACodon = DNAKmer{3,1}
 const RNACodon = RNAKmer{3,1}
 
