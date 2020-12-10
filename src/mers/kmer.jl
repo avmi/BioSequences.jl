@@ -210,8 +210,7 @@ parameterisation of the Kmer type is good.
 end
 
 @inline Base.length(x::Kmer{A,K,N}) where {A,K,N} = K
-@inline Base.summary(x::Kmer{DNAAlphabet{2},K,N}) where {K,N} = string("DNA ", K, "-mer")
-@inline Base.summary(x::Kmer{RNAAlphabet{2},K,N}) where {K,N} = string("RNA ", K, "-mer")
+@inline Base.summary(x::Kmer{A,K,N}) where {A,K,N} = string(eltype(x), ' ', K, "-mer")
 
 function Base.typemin(::Type{Kmer{A,K,N}}) where {A,K,N}
     return Kmer{A,K,N}(ntuple(i -> zero(UInt64), N))
